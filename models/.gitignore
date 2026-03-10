@@ -1,0 +1,5 @@
+# 模型文件目录（不提交到仓库）
+# 请运行: huggingface-cli download Qwen/Qwen2.5-0.5B --local-dir ./models/Qwen2.5-0.5B
+*.bin
+*.safetensors
+*.gguf
