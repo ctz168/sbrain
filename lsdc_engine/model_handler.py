@@ -20,6 +20,9 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 # 添加项目路径
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+# 导入黎曼平滑
+from lsdc_engine.riemann_smoothing import LogicSmoothingProcessor
+
 
 @dataclass
 class NarrowBandwidthConfig:
@@ -76,11 +79,20 @@ class ModelHandler:
         print(f"  隐藏层: {self.hidden_size}")
         
         # 窄宽带状态
-        print(f"\n[2/2] 初始化窄宽带控制器")
+        print(f"\n[2/3] 初始化窄宽带控制器")
         print(f"  max_new_tokens: {self.config.max_new_tokens}")
         print(f"  window_size: {self.config.window_size}")
         print(f"  do_sample: {self.config.do_sample} (Greedy)")
         print(f"  ✓ 窄宽带控制器初始化完成")
+        
+        # 黎曼平滑处理器
+        print(f"\n[3/3] 初始化黎曼平滑处理器")
+        self.logic_smoother = LogicSmoothingProcessor(
+            hidden_dim=self.hidden_size,
+            alpha=0.15
+        )
+        print(f"  alpha: 0.15 (逻辑稠密度权重)")
+        print(f"  ✓ 黎曼平滑处理器初始化完成")
         
         print(f"\n{'='*60}")
         print("✓ 模型加载完成")
@@ -124,11 +136,12 @@ class ModelHandler:
     def generate_micro_step(
         self,
         prompt: str
-    ) -> Tuple[str, torch.Tensor]:
+    ) -> Tuple[str, torch.Tensor, float]:
         """
         生成微步
         
         使用Greedy Search保证逻辑确定性
+        集成黎曼平滑提升逻辑稠密度
         
         Args:
             prompt: 输入提示词
@@ -136,6 +149,7 @@ class ModelHandler:
         Returns:
             generated_text: 生成的文本
             hidden_state: 隐藏状态（用于状态连续性）
+            logic_density: 逻辑稠密度分数
         """
         # 编码
         inputs = self.tokenizer(
@@ -158,26 +172,32 @@ class ModelHandler:
                 temperature=self.config.temperature,
                 top_p=self.config.top_p,
                 repetition_penalty=self.config.repetition_penalty,
-                pad_token_id=self.tokenizer.eos_token_id
+                pad_token_id=self.tokenizer.eos_token_id,
+                output_hidden_states=True,
+                return_dict_in_generate=True
             )
         
         # 解码
         generated_text = self.tokenizer.decode(
-            outputs[0][input_ids.shape[1]:],
+            outputs.sequences[0][input_ids.shape[1]:],
             skip_special_tokens=True
         )
         
-        # 获取隐藏状态（用于状态连续性）
+        # 获取隐藏状态并应用黎曼平滑
         with torch.no_grad():
-            hidden_outputs = self.model(
-                input_ids=outputs,
-                attention_mask=torch.ones_like(outputs),
-                output_hidden_states=True,
-                return_dict=True
-            )
-            hidden_state = hidden_outputs.hidden_states[-1][:, -1, :]
+            # 获取最后一层的隐藏状态
+            last_hidden = outputs.hidden_states[-1]
+            if isinstance(last_hidden, tuple):
+                last_hidden = last_hidden[-1]
+            
+            # 应用黎曼平滑
+            smoothed_hidden = self.logic_smoother.smooth_hidden_states(last_hidden)
+            hidden_state = smoothed_hidden[:, -1, :]
         
-        return generated_text, hidden_state
+        # 获取逻辑稠密度
+        logic_density = self.logic_smoother.get_logic_density()
+        
+        return generated_text, hidden_state, logic_density
     
     def extract_conclusion(self, text: str) -> str:
         """

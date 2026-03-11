@@ -167,11 +167,12 @@ class LogicProcessor:
                 current_goal, previous_conclusion
             )
             
-            generated_text, hidden_state = self.model.generate_micro_step(prompt)
+            generated_text, hidden_state, logic_density = self.model.generate_micro_step(prompt)
             
             # 解析生成内容
             node = self._parse_generated_text(node, generated_text)
             node.hidden_state = hidden_state
+            node.density = logic_density  # 使用黎曼平滑计算的稠密度
             
             # 检查逻辑稠密性
             if not self.model.is_logic_dense(generated_text):
@@ -302,11 +303,11 @@ class LogicProcessor:
 需要补充的推理: {text}
 详细推理过程:"""
         
-        densify_text, hidden_state = self.model.generate_micro_step(densify_prompt)
+        densify_text, hidden_state, logic_density = self.model.generate_micro_step(densify_prompt)
         
         densify_node = self._parse_generated_text(densify_node, densify_text)
         densify_node.hidden_state = hidden_state
-        densify_node.density = 0.8
+        densify_node.density = logic_density
         
         return densify_node
     
