@@ -223,6 +223,11 @@ class LogicProcessor:
         
         提取前提、推演、结论
         """
+        # 移除<think...</think标签及其内容
+        import re
+        text = re.sub(r'<think.*?</think.*?>', '', text, flags=re.DOTALL | re.IGNORECASE)
+        text = re.sub(r'<think.*', '', text, flags=re.IGNORECASE)
+        
         # 清理重复内容
         lines = text.strip().split('\n')
         cleaned_lines = []
@@ -238,6 +243,9 @@ class LogicProcessor:
             # 跳过"详细推理过程"等无意义内容
             if '详细推理过程' in line or '推理过程' == line:
                 continue
+            # 跳过Thinking Process
+            if 'Thinking Process' in line:
+                continue
             cleaned_lines.append(line)
             prev_line = line
         
@@ -245,8 +253,8 @@ class LogicProcessor:
         
         # 尝试提取结构
         premise_match = re.search(r'已知[：:]\s*(.+?)(?=\n|问题|$)', text)
-        derivation_match = re.search(r'(?:因为|由于|所以|因此)[：:，]?\s*(.+?)(?=\n|结论|$)', text)
-        conclusion_match = re.search(r'(?:结论|答案|结果)[：:]\s*(.+?)(?=\n|$)', text)
+        derivation_match = re.search(r'(?:因为|由于|所以|因此|分析)[：:，]?\s*(.+?)(?=\n|结论|$)', text)
+        conclusion_match = re.search(r'(?:结论|答案|结果|是)[：:]\s*(.+?)(?=\n|$)', text)
         
         if premise_match:
             node.premise = premise_match.group(1).strip()
@@ -257,16 +265,16 @@ class LogicProcessor:
         
         # 如果没有明确结构，整体作为推演
         if not node.derivation and not node.conclusion:
-            node.derivation = text.strip()[:100]
+            node.derivation = text.strip()[:150]
             # 尝试提取最后一句作为结论
             sentences = re.split(r'[。！？]', text)
             for s in reversed(sentences):
                 s = s.strip()
                 if s and len(s) > 2:
-                    node.conclusion = s[:50]
+                    node.conclusion = s[:80]
                     break
         
-        node.content = text[:200]
+        node.content = text[:300]
         return node
     
     def _densify(

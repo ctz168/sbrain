@@ -113,45 +113,30 @@ class LSDCBot:
         thinking_msg = await update.message.reply_text("🧠 LSDC处理中...")
         
         try:
-            # 检查是否是计算问题
-            import re
-            rent_match = re.search(r'(\d+)\s*天\s*房租\s*(\d+)', user_input)
-            
-            if rent_match and '月租' in user_input:
-                # 直接计算
-                days = int(rent_match.group(1))
-                rent = int(rent_match.group(2))
-                daily = rent / days
-                monthly = daily * 30
-                
-                response_text = f"""【计算结果】
-
-租期: {days}天
-房租: {rent}元
-
-日租 = {rent} ÷ {days} = {daily:.0f}元/天
-月租 = {daily:.0f} × 30 = {monthly:.0f}元/月
-
-答案: 月租是 {monthly:.0f} 元/月"""
-                
-                session['context'] = f"月租{monthly:.0f}元，日租{daily:.0f}元"
-                await thinking_msg.edit_text(response_text)
-                return
-            
-            # 使用LSDC引擎处理
+            # 使用LSDC引擎处理所有问题
             response_text = ""
             node_count = 0
             
             for node in self.processor.process(user_input, session['context']):
                 node_count += 1
                 
-                # 构建响应
-                if node.premise:
-                    response_text += f"【前提】{node.premise[:50]}\n"
-                if node.derivation:
-                    response_text += f"【推演】{node.derivation[:80]}\n"
-                if node.conclusion:
-                    response_text += f"【结论】{node.conclusion[:50]}\n"
+                # 清理输出
+                premise = node.premise[:60] if node.premise else ""
+                derivation = node.derivation[:100] if node.derivation else ""
+                conclusion = node.conclusion[:60] if node.conclusion else ""
+                
+                # 跳过无意义内容
+                if 'Thinking Process' in premise or 'Thinking Process' in derivation:
+                    continue
+                if '<think' in premise or '<think' in derivation:
+                    continue
+                
+                if premise:
+                    response_text += f"【前提】{premise}\n"
+                if derivation:
+                    response_text += f"【推演】{derivation}\n"
+                if conclusion:
+                    response_text += f"【结论】{conclusion}\n"
                 response_text += f"[密度: {node.density:.1f}]\n\n"
                 
                 # 更新上下文

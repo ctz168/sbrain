@@ -24,7 +24,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 @dataclass
 class NarrowBandwidthConfig:
     """窄宽带配置"""
-    max_new_tokens: int = 24        # 极短生成（高刷新）
+    max_new_tokens: int = 50        # 增加生成长度
     window_size: int = 2            # 窗口大小：只保留前1步的结论
     temperature: float = 1.0        # Greedy Search (temp=1.0)
     do_sample: bool = False         # 关闭采样，使用Greedy
@@ -112,12 +112,12 @@ class ModelHandler:
 
 问题: {current_goal}
 
-请直接回答，不要重复问题："""
+请分析并回答："""
         else:
             # 第一步：只有目标
             prompt = f"""问题: {current_goal}
 
-请直接回答，不要重复问题："""
+请分析并回答："""
         
         return prompt
     
