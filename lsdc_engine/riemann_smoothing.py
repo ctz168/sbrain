@@ -286,6 +286,7 @@ class DenseLogicEngine:
         
         # 逻辑处理器
         self.logic_processor = LogicSmoothingProcessor(
+            hidden_dim=hidden_dim,
             vocab_size=vocab_size,
             smoothing_strength=smoothing_strength
         )
@@ -392,10 +393,12 @@ def test_logic_processor():
     print("测试逻辑处理器")
     print("="*60)
     
+    hidden_dim = 128
     vocab_size = 1000
     
     # 创建处理器
     processor = LogicSmoothingProcessor(
+        hidden_dim=hidden_dim,
         vocab_size=vocab_size,
         smoothing_strength=0.3
     )
