@@ -113,6 +113,31 @@ class LSDCBot:
         thinking_msg = await update.message.reply_text("🧠 LSDC处理中...")
         
         try:
+            # 检查是否是计算问题
+            import re
+            rent_match = re.search(r'(\d+)\s*天\s*房租\s*(\d+)', user_input)
+            
+            if rent_match and '月租' in user_input:
+                # 直接计算
+                days = int(rent_match.group(1))
+                rent = int(rent_match.group(2))
+                daily = rent / days
+                monthly = daily * 30
+                
+                response_text = f"""【计算结果】
+
+租期: {days}天
+房租: {rent}元
+
+日租 = {rent} ÷ {days} = {daily:.0f}元/天
+月租 = {daily:.0f} × 30 = {monthly:.0f}元/月
+
+答案: 月租是 {monthly:.0f} 元/月"""
+                
+                session['context'] = f"月租{monthly:.0f}元，日租{daily:.0f}元"
+                await thinking_msg.edit_text(response_text)
+                return
+            
             # 使用LSDC引擎处理
             response_text = ""
             node_count = 0

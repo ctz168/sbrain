@@ -223,8 +223,28 @@ class LogicProcessor:
         
         提取前提、推演、结论
         """
+        # 清理重复内容
+        lines = text.strip().split('\n')
+        cleaned_lines = []
+        prev_line = ""
+        
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+            # 跳过重复行
+            if line == prev_line:
+                continue
+            # 跳过"详细推理过程"等无意义内容
+            if '详细推理过程' in line or '推理过程' == line:
+                continue
+            cleaned_lines.append(line)
+            prev_line = line
+        
+        text = ' '.join(cleaned_lines)
+        
         # 尝试提取结构
-        premise_match = re.search(r'已知[：:]\s*(.+?)(?=\n|目标|$)', text)
+        premise_match = re.search(r'已知[：:]\s*(.+?)(?=\n|问题|$)', text)
         derivation_match = re.search(r'(?:因为|由于|所以|因此)[：:，]?\s*(.+?)(?=\n|结论|$)', text)
         conclusion_match = re.search(r'(?:结论|答案|结果)[：:]\s*(.+?)(?=\n|$)', text)
         
@@ -237,13 +257,16 @@ class LogicProcessor:
         
         # 如果没有明确结构，整体作为推演
         if not node.derivation and not node.conclusion:
-            node.derivation = text.strip()
+            node.derivation = text.strip()[:100]
             # 尝试提取最后一句作为结论
             sentences = re.split(r'[。！？]', text)
-            if sentences:
-                node.conclusion = sentences[-1].strip() if sentences[-1].strip() else sentences[-2].strip()
+            for s in reversed(sentences):
+                s = s.strip()
+                if s and len(s) > 2:
+                    node.conclusion = s[:50]
+                    break
         
-        node.content = text
+        node.content = text[:200]
         return node
     
     def _densify(

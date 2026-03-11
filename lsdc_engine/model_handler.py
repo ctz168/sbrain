@@ -109,12 +109,15 @@ class ModelHandler:
         if previous_conclusion:
             # 窄宽带：只保留前一步结论 + 当前目标
             prompt = f"""已知: {previous_conclusion}
-目标: {current_goal}
-下一步:"""
+
+问题: {current_goal}
+
+请直接回答，不要重复问题："""
         else:
             # 第一步：只有目标
-            prompt = f"""目标: {current_goal}
-第一步:"""
+            prompt = f"""问题: {current_goal}
+
+请直接回答，不要重复问题："""
         
         return prompt
     
