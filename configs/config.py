@@ -70,7 +70,7 @@ class STDPConfig:
 class HippocampusConfig:
     """海马体记忆系统配置"""
     # 内嗅皮层EC编码
-    EC_input_dim: int = 768  # Qwen3.5-0.8B隐藏层维度
+    EC_input_dim: int = 896  # Qwen2.5-0.5B隐藏层维度
     EC_output_dim: int = 64  # 压缩后的稀疏特征维度
     EC_sparsity: float = 0.75  # 75%稀疏度
     
@@ -168,11 +168,11 @@ class SceneAdaptConfig:
     
     # 场景关键词
     scene_keywords: Dict[str, List[str]] = field(default_factory=lambda: {
-        "logical_reasoning": ["推理", "逻辑", "因为", "所以", "证明", "推导"],
-        "code_generation": ["代码", "编程", "函数", "算法", "实现", "程序"],
-        "fact_qa": ["是什么", "什么时候", "在哪里", "谁", "多少", "事实"],
-        "creative_writing": ["写", "创作", "设计", "方案", "计划", "构思"],
-        "math_calculation": ["计算", "数学", "加减乘除", "等于", "求值", "方程"]
+        "logical_reasoning": ["推理", "逻辑", "因为", "所以", "证明", "推导", "分析", "判断"],
+        "code_generation": ["代码", "编程", "函数", "算法", "实现", "程序", "写一个", "Python", "Java"],
+        "fact_qa": ["是什么", "什么时候", "在哪里", "谁", "事实", "历史", "定义"],
+        "creative_writing": ["写", "创作", "设计", "方案", "计划", "构思", "想象", "故事"],
+        "math_calculation": ["计算", "数学", "加减乘除", "等于", "求值", "方程", "求解", "公式", "月租", "房租", "价格", "费用", "合计", "押金", "多少元", "是多少"]
     })
 
 

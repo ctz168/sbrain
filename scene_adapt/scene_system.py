@@ -101,12 +101,29 @@ class SceneClassifier:
         """
         scores = {}
         
+        # 检测是否是问答类问题（包含疑问词）
+        is_question = any(kw in input_text for kw in ['怎样', '如何', '怎么', '为什么', '什么', '能不能', '可以吗', '吗？', '？'])
+        
+        # 检测数字和计算相关模式
+        has_numbers = bool(re.search(r'\d+', input_text))
+        has_calc_keywords = any(kw in input_text for kw in ['月租', '房租', '计算', '等于', '多少', '合计', '费用', '价格'])
+        needs_calculation = any(kw in input_text for kw in ['是多少', '计算', '求', '等于多少', '多少钱'])
+        
         for scene_type, keywords in self.scene_keywords.items():
             score = 0
             for keyword in keywords:
                 if keyword in input_text:
                     score += 1
             scores[scene_type] = score
+        
+        # 如果是问答类问题，优先使用fact_qa
+        if is_question and not needs_calculation:
+            return 'fact_qa', self.scene_profiles['fact_qa']
+        
+        # 如果有数字和计算关键词，且确实需要计算，选择math_calculation
+        if has_numbers and has_calc_keywords and needs_calculation:
+            if scores.get('math_calculation', 0) > 0:
+                return 'math_calculation', self.scene_profiles['math_calculation']
         
         # 选择得分最高的场景
         if max(scores.values()) == 0:

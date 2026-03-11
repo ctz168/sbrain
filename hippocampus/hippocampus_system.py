@@ -253,10 +253,16 @@ class CA3MemoryStore:
         if len(self.memory_order) > 0:
             prev_id = self.memory_order[-1]
             entry.temporal_skeleton['prev'] = [prev_id]
+            entry.temporal_skeleton['next'] = []  # 初始化next列表
             
             # 更新前一条记忆的后向链接
             if prev_id in self.memory_buffer:
+                if 'next' not in self.memory_buffer[prev_id].temporal_skeleton:
+                    self.memory_buffer[prev_id].temporal_skeleton['next'] = []
                 self.memory_buffer[prev_id].temporal_skeleton['next'].append(memory_id)
+        else:
+            entry.temporal_skeleton['prev'] = []
+            entry.temporal_skeleton['next'] = []
         
         # 存储
         self.memory_buffer[memory_id] = entry
@@ -358,8 +364,9 @@ class CA3MemoryStore:
             chain.append(entry)
             
             # 获取下一个记忆
-            if entry.temporal_skeleton.get('next'):
-                current_id = entry.temporal_skeleton['next'][0]
+            next_list = entry.temporal_skeleton.get('next', [])
+            if next_list and len(next_list) > 0:
+                current_id = next_list[0]
             else:
                 break
         

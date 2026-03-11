@@ -1,0 +1,7 @@
+
+# 模型文件
+models/Qwen*/
+models/*.bin
+models/*.safetensors
+models/*.gguf
+*.model
