@@ -1,0 +1,30 @@
+# 类人脑双系统全闭环AI架构 - 依赖包
+
+# Python版本要求: 3.10+
+
+# ========== 核心框架 ==========
+torch>=2.0.0
+numpy>=1.24.0,<2.0.0
+
+# ========== Transformers ==========
+transformers>=4.35.0
+sentencepiece>=0.1.99
+accelerate>=0.24.0
+safetensors>=0.4.0
+
+# ========== 基础工具 ==========
+scipy>=1.11.0
+scikit-learn>=1.3.0
+pandas>=2.0.0
+tqdm>=4.66.0
+pyyaml>=6.0
+
+# ========== 量化支持 ==========
+# bitsandbytes>=0.41.0  # INT4/INT8量化
+
+# ========== 测试 ==========
+pytest>=7.4.0
+
+# ========== 可选 ==========
+# onnx>=1.15.0  # ONNX导出
+# onnxruntime>=1.16.0  # ONNX推理
