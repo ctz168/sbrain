@@ -1,13 +1,13 @@
 # 类人脑双系统全闭环AI架构 (sbrain)
 
-基于阿里云Qwen3.5-0.8B底座模型的类人脑AI架构，实现端侧设备上接近13B模型的智能水平。
+基于 DeepSeek-R1-Distill-Qwen-1.5B 底座模型的类人脑AI架构，实现端侧设备上极高的智能水平。
 
 ## 核心特性
 
 ### 刚性约束（100%严格遵守）
-- ✅ **底座唯一约束**：仅使用Qwen3.5-0.8B单模型
+- ✅ **底座唯一约束**：仅使用 DeepSeek-R1-Distill-Qwen-1.5B 单模型
 - ✅ **权重安全约束**：90%静态权重冻结 + 10%动态权重STDP更新
-- ✅ **端侧算力约束**：INT4量化后显存≤420MB，单周期算力开销≤10%
+- ✅ **端侧算力约束**：INT4量化后显存占用极低，单周期算力开销≤10%
 - ✅ **原生执行范式**：10ms/100Hz刷新周期，O(1)注意力复杂度
 - ✅ **学习机制约束**：纯STDP学习，无反向传播
 - ✅ **全闭环约束**：所有模块深度耦合，无外挂
@@ -36,7 +36,7 @@
 - 离线反思闭环
 
 #### 模块5：海马体-新皮层协同记忆系统
-- 内嗅皮层EC：特征编码（768维→64维）
+- 内嗅皮层EC：特征编码（1536维→64维）
 - 齿状回DG：模式分离
 - CA3区：情景记忆库（1024条）
 - CA1区：时序门控
@@ -64,55 +64,36 @@ cd sbrain
 
 # 安装依赖
 pip install -r requirements.txt
+pip install python-telegram-bot
 
 # 下载模型
-huggingface-cli download Qwen/Qwen2.5-0.5B --local-dir ./models/Qwen2.5-0.5B
+huggingface-cli download deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B --local-dir ./models/DeepSeek-R1-Distill-Qwen-1.5B
 ```
 
 ## 快速开始
 
+### Telegram Bot 对话 (DeepSeek-R1-1.5B)
+
+```bash
+python telegram_bot/run_bot_deepseek.py --token YOUR_BOT_TOKEN --model_path ./models/DeepSeek-R1-Distill-Qwen-1.5B
+```
+
 ### 交互式对话
 
 ```bash
-python main.py --mode chat --model-path ./models/Qwen2.5-0.5B
+python main.py --mode chat --model-path ./models/DeepSeek-R1-Distill-Qwen-1.5B
 ```
 
 ### 训练
 
 ```bash
-python main.py --mode train --model-path ./models/Qwen2.5-0.5B
+python main.py --mode train --model-path ./models/DeepSeek-R1-Distill-Qwen-1.5B
 ```
 
 ### 测评
 
 ```bash
-python main.py --mode eval --model-path ./models/Qwen2.5-0.5B
-```
-
-### 服务模式
-
-```bash
-python main.py --mode serve --model-path ./models/Qwen2.5-0.5B
-```
-
-## 使用示例
-
-```python
-from sbrain import BrainAIModel, create_model
-
-# 创建模型
-model = create_model(model_path='./models/Qwen2.5-0.5B')
-
-# 对话
-response = model.chat("你好，请介绍一下你自己")
-print(response)
-
-# 获取统计信息
-stats = model.get_stats()
-print(stats)
-
-# 保存检查点
-model.save_checkpoint('my_checkpoint.pt')
+python main.py --mode eval --model-path ./models/DeepSeek-R1-Distill-Qwen-1.5B
 ```
 
 ## 项目结构
@@ -123,74 +104,26 @@ sbrain/
 │   └── config.py      # 全局配置
 ├── core/              # 核心模块
 │   ├── model.py       # 主模型
+│   ├── deepseek_bot.py # DeepSeek Bot核心
 │   └── dual_weight.py # 双轨权重
+├── telegram_bot/      # Telegram Bot
+│   └── run_bot_deepseek.py # DeepSeek Bot启动脚本
 ├── stdp/              # STDP学习系统
-│   └── stdp_engine.py # STDP引擎
 ├── hippocampus/       # 海马体系统
-│   └── hippocampus_system.py
 ├── inference/         # 推理引擎
-│   └── engine.py
 ├── metacognition/     # 元认知系统
-│   └── metacognition_system.py
 ├── scene_adapt/       # 场景适配
-│   └── scene_system.py
 ├── evaluation/        # 测评系统
-│   └── evaluator.py
-├── training/          # 训练脚本
-├── deployment/        # 部署脚本
-├── tests/             # 测试文件
-├── docs/              # 文档
 ├── main.py            # 主入口
 ├── requirements.txt   # 依赖
 └── README.md          # 说明文档
-```
-
-## 测评指标
-
-| 维度 | 指标 | 目标 |
-|------|------|------|
-| 记忆能力 | 100k token保持率 | ≥95% |
-| 记忆能力 | 记忆混淆率 | ≤1% |
-| 记忆能力 | 跨会话召回率 | ≥90% |
-| 记忆能力 | 抗遗忘能力 | ≥99% |
-| 推理能力 | GSM8K准确率 | ≥40% |
-| 推理能力 | HumanEval准确率 | ≥25% |
-| 推理能力 | CommonsenseQA准确率 | ≥60% |
-| 可靠性 | 事实准确率 | ≥90% |
-| 可靠性 | 幻觉率 | ≤8% |
-| 性能 | 显存占用 | ≤420MB |
-| 性能 | 推理延迟 | ≤20ms |
-| 学习能力 | 学习速度提升 | ≥400% |
-
-## 端侧部署
-
-### 树莓派4B
-
-```bash
-# 安装依赖
-pip install -r requirements.txt
-
-# 运行
-python main.py --mode chat --device cpu --quantization INT4
-```
-
-### 安卓手机
-
-```bash
-# 使用Termux运行
-pkg install python
-pip install -r requirements.txt
-python main.py --mode chat
 ```
 
 ## 许可证
 
 MIT License
 
-## 贡献
-
-欢迎提交Issue和Pull Request！
-
 ## 联系方式
 
 - GitHub: https://github.com/ctz168/sbrain
+```

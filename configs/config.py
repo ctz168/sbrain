@@ -1,6 +1,6 @@
 """
 类人脑双系统全闭环AI架构 - 全局配置文件
-基于Qwen3.5-0.8B底座模型
+基于 DeepSeek-R1-Distill-Qwen-1.5B 底座模型
 
 严格遵循刚性红线约束：
 - 90%静态权重 + 10%动态权重
@@ -70,7 +70,7 @@ class STDPConfig:
 class HippocampusConfig:
     """海马体记忆系统配置"""
     # 内嗅皮层EC编码
-    EC_input_dim: int = 896  # Qwen2.5-0.5B隐藏层维度
+    EC_input_dim: int = 1536  # DeepSeek-R1-Distill-Qwen-1.5B 隐藏层维度
     EC_output_dim: int = 64  # 压缩后的稀疏特征维度
     EC_sparsity: float = 0.75  # 75%稀疏度
     
@@ -215,12 +215,12 @@ class EvaluationConfig:
 class BrainConfig:
     """类人脑双系统全闭环AI架构全局配置"""
     # 模型配置
-    model_name: str = "Qwen/Qwen2.5-0.5B"  # 使用可下载的模型
-    model_path: str = "./models/Qwen2.5-0.5B"
-    hidden_size: int = 896  # Qwen2.5-0.5B的隐藏层维度
-    num_attention_heads: int = 14
-    num_hidden_layers: int = 24
-    intermediate_size: int = 4864
+    model_name: str = "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"  # 使用 DeepSeek-R1-1.5B 模型
+    model_path: str = "./models/DeepSeek-R1-Distill-Qwen-1.5B"
+    hidden_size: int = 1536  # DeepSeek-R1-Distill-Qwen-1.5B 的隐藏层维度
+    num_attention_heads: int = 12
+    num_hidden_layers: int = 28
+    intermediate_size: int = 8960
     vocab_size: int = 151936
     
     # 子配置
